@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>theSlap</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap">
+<style>
+:root{--bg:#e6f3ff;--card:#fff;--ink:#12305a;--mute:#6483ab;--blue:#1e8bff;--blue2:#0a5fd6;--or:#ff8a1f;--or2:#e5620a;--line:#cfe5fb;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root{--bg:#0b1d3a;--card:#16335f;--ink:#eaf4ff;--mute:#9bb8e0;--line:#27508c}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{font-family:'Fredoka','Trebuchet MS',system-ui,sans-serif;color:var(--ink);background:linear-gradient(160deg,#4aa8ff,#0a5fd6) fixed;display:flex;justify-content:center;align-items:center}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:#4aa8ff}
+.phone{width:100%;height:100%;max-width:430px;background:var(--bg);display:flex;flex-direction:column;position:relative;overflow:hidden}
+@media(min-width:480px){.phone{height:min(860px,94%);border-radius:38px;border:8px solid #0b2a5c;box-shadow:0 20px 50px rgba(0,0,0,.4)}}
+.top{background:linear-gradient(#58b0ff,#1478ec 60%,#0a5fd6);border-bottom:4px solid var(--or);padding:10px 14px;display:flex;align-items:center;gap:10px;flex:none}
+.logo{font-weight:700;font-size:28px;color:#fff;letter-spacing:-1px;text-shadow:0 2px 0 var(--blue2);display:flex;align-items:center;gap:8px;margin-right:auto}
+.hand{width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffd08a,var(--or));border:3px solid #fff;display:grid;place-items:center;font-size:18px;transform:rotate(-14deg)}
+.bell{position:relative;background:rgba(255,255,255,.2);border:0;border-radius:50%;width:40px;height:40px;font-size:20px;color:#fff}
+.bell i{position:absolute;top:-2px;right:-2px;background:var(--or);color:#fff;font:700 12px 'Fredoka',sans-serif;border-radius:99px;min-width:18px;height:18px;display:grid;place-items:center;border:2px solid #fff;font-style:normal}
+.screen{flex:1;overflow-y:auto;padding:12px;display:grid;gap:12px;align-content:start}
+.card{background:var(--card);border:3px solid var(--line);border-radius:22px;padding:12px;box-shadow:0 4px 0 var(--line)}
+.av{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-size:23px;border:3px solid #fff;box-shadow:0 0 0 2px var(--line);flex:none}
+.head{display:flex;gap:10px;align-items:center}.who{font-weight:700}.when{font-size:13px;color:var(--mute)}
+.post p{margin:10px 0;font-size:18px;line-height:1.35;word-break:break-word}
+.acts{display:flex;gap:8px}
+button{font:inherit;cursor:pointer;color:inherit}
+.slap{flex:1;border:3px solid var(--blue2);border-radius:99px;padding:9px;font-weight:700;color:#fff;background:linear-gradient(#5cb4ff,var(--blue) 50%,var(--blue2));box-shadow:0 3px 0 #073f94}
+.slap:active{transform:translateY(2px)}
+.slap.on{background:linear-gradient(#ffb15c,var(--or));border-color:var(--or2);box-shadow:0 3px 0 #b84a00}
+.ghost{border:3px solid var(--line);background:transparent;border-radius:99px;padding:9px 16px;font-weight:600}
+.cm{background:var(--bg);border-radius:14px;padding:6px 12px;font-size:15px;margin-top:6px}.cm b{color:var(--blue2)}
+@media (prefers-color-scheme:dark){.cm b,h3,nav button.on,.chip{color:#7dbdff}}
+input,textarea{font:inherit;color:var(--ink);background:var(--bg);border:3px solid var(--line);border-radius:99px;padding:8px 14px;width:100%}
+textarea{border-radius:16px;min-height:90px;font-size:17px;resize:none}
+input:focus,textarea:focus{outline:3px solid var(--or)}
+.cf{display:flex;gap:6px;margin-top:8px}.cf input{padding:7px 12px}
+nav{flex:none;display:grid;grid-template-columns:1fr 1fr 74px 1fr 1fr;align-items:end;background:var(--card);border-top:3px solid var(--line);padding:6px 4px 8px}
+.out nav,.out .bell{display:none}
+nav button{background:none;border:0;font-size:12px;font-weight:600;color:var(--mute);display:grid;justify-items:center;gap:2px;padding:4px 0}
+nav button b{font-size:22px;font-weight:400;filter:grayscale(1);opacity:.7}
+nav button.on{color:var(--blue2)}nav button.on b{filter:none;opacity:1}
+nav .fab{width:62px;height:62px;border-radius:50%;border:4px solid #fff;margin:-30px auto 0;background:radial-gradient(circle at 35% 30%,#ffc27d,var(--or) 55%,var(--or2));font-size:28px;color:#fff;box-shadow:0 5px 0 #b84a00,0 8px 12px rgba(0,0,0,.3);display:grid;place-items:center;padding:0}
+.sheet{position:absolute;inset:0;background:rgba(5,20,50,.55);display:none;align-items:flex-end;z-index:10}
+.sheet.open{display:flex}
+.sheet .in{width:100%;background:var(--card);border-radius:26px 26px 0 0;padding:16px;border-top:4px solid var(--or)}
+.row{display:flex;gap:8px;align-items:center;margin-top:10px}.row small{margin-right:auto;color:var(--mute)}
+.go{border:0;border-radius:99px;padding:10px 22px;font-weight:700;color:#fff;background:linear-gradient(#ffb15c,var(--or) 50%,var(--or2));box-shadow:0 4px 0 #b84a00;text-shadow:0 1px 0 rgba(0,0,0,.25)}
+.go:active{transform:translateY(3px);box-shadow:0 1px 0 #b84a00}
+.fr{display:flex;align-items:center;gap:10px;padding:8px 0}.fr+.fr{border-top:2px solid var(--line)}.fr .go{margin-left:auto;padding:7px 14px}
+.me{text-align:center}.me .av{width:92px;height:92px;font-size:48px;margin:0 auto 6px}
+.picks{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:8px 0}.picks button{border:3px solid var(--line);background:var(--bg);border-radius:14px;font-size:22px;padding:4px 8px}.picks button.on{border-color:var(--or)}
+.chip{border:0;background:var(--bg);color:var(--blue2);border-radius:99px;padding:7px 12px;font-weight:600;font-size:14px;margin:2px}
+.toast{position:absolute;left:50%;bottom:92px;transform:translateX(-50%);background:#0b2a5c;color:#fff;padding:9px 16px;border-radius:99px;font-weight:600;z-index:20;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90%}.toast.show{opacity:1}
+.pow{position:fixed;pointer-events:none;z-index:40;font-weight:700;font-size:34px;color:var(--or);-webkit-text-stroke:2px #fff;paint-order:stroke fill;animation:pow .7s ease-out forwards}
+@keyframes pow{0%{transform:translate(-50%,-50%) scale(.3) rotate(-18deg);opacity:1}40%{transform:translate(-50%,-90%) scale(1.3) rotate(8deg)}100%{transform:translate(-50%,-190%) scale(1);opacity:0}}
+@media (prefers-reduced-motion:reduce){.pow{animation-duration:.01s}}
+h3{margin:0 0 8px;color:var(--blue2)}
+.login{display:grid;gap:10px}
+</style>
+</head>
+<body>
+<div class="phone out" id="phone">
+<div class="top"><div class="logo"><span class="hand">✋</span>theSlap</div><button class="bell" id="bell" aria-label="Alerts">🔔<i id="badge" hidden>0</i></button></div>
+<div class="screen" id="screen"></div>
+<nav><button data-t="home"><b>🏠</b>Home</button><button data-t="friends"><b>👥</b>Friends</button><button class="fab" id="fab" aria-label="New slap">✍️</button><button data-t="alerts"><b>⚡</b>Alerts</button><button data-t="me"><b>🙂</b>Me</button></nav>
+<div class="sheet" id="sheet"><div class="in"><h3>What’s slapping?</h3><textarea id="txt" maxlength="200" placeholder="Slap something onto your page…"></textarea><div class="row"><small id="cnt">200</small><button class="ghost" id="cancel" type="button">Cancel</button><button class="go" id="send" type="button">Slap it up</button></div></div></div>
+<div class="toast" id="toast"></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+(function(){
+var SB_URL="https://utwagletvuipfdubiiib.supabase.co/rest/v1/",SB_KEY="sb_publishable_jwtw0bvkh-kjnjndKgMXKg_Q_U2ZYyV";
+var sb=window.supabase.createClient(SB_URL,SB_KEY);
+var me=null,P={},posts=[],slaps=[],cms=[],alerts=[],unread=0,tab="home",dirty=false,timer,chan;
+var moods=["ready to perform","overly caffeinated","running late","feeling slapped","too famous for this","hungry for tacos"];
+var pics=["🎤","🎸","🧢","💃","🦄","🍕","🧦","🎹"];
+function $(i){return document.getElementById(i)}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function col(id){var h=0;for(var i=0;i<id.length;i++)h=(h*31+id.charCodeAt(i))%360;return"hsl("+h+",80%,85%)"}
+function av(id){return'<div class="av" style="background:'+col(id)+'">'+esc((P[id]||{}).avatar||"🙂")+'</div>'}
+function nm(id){return esc((P[id]||{}).name||"Friend")}
+function ago(t){var s=(Date.now()-new Date(t))/1000;return s<60?"now":s<3600?Math.floor(s/60)+"m":s<86400?Math.floor(s/3600)+"h":Math.floor(s/86400)+"d"}
+function toast(m){var t=$("toast");t.textContent=m;t.className="toast show";clearTimeout(toast.x);toast.x=setTimeout(function(){t.className="toast"},2200)}
+var ac;function thwack(){try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();var o=ac.createOscillator(),g=ac.createGain(),n=ac.currentTime;o.type="square";o.frequency.setValueAtTime(380,n);o.frequency.exponentialRampToValueAtTime(60,n+.12);g.gain.setValueAtTime(.18,n);g.gain.exponentialRampToValueAtTime(.001,n+.14);o.connect(g);g.connect(ac.destination);o.start();o.stop(n+.15)}catch(e){}}
+function pow(el){var r=el.getBoundingClientRect(),e=document.createElement("div");e.className="pow";e.textContent=["SLAP!","THWACK!","POW!"][Math.floor(Math.random()*3)];e.style.left=r.left+r.width/2+"px";e.style.top=r.top+"px";document.body.appendChild(e);setTimeout(function(){e.remove()},750)}
+async function load(){
+var r=await Promise.all([sb.from("profiles").select("*"),sb.from("posts").select("*").order("created_at",{ascending:false}).limit(50),sb.from("slaps").select("*"),sb.from("comments").select("*").order("created_at")]);
+r.forEach(function(x){if(x.error)toast(x.error.message)});
+P={};(r[0].data||[]).forEach(function(p){P[p.id]=p});posts=r[1].data||[];slaps=r[2].data||[];cms=r[3].data||[];refresh()}
+function refresh(){var a=document.activeElement;if(a&&a.tagName==="INPUT"&&a.closest(".screen")&&me){dirty=true;return}view()}
+function view(){
+var h="",ph=$("phone");ph.className="phone"+(me?"":" out");
+if(!me){h='<form class="card login" data-login><h3>Sign in to theSlap</h3><input type="email" id="em" placeholder="Email" autocomplete="username" required><input type="password" id="pw" placeholder="Password" autocomplete="current-password" required><button class="go" type="submit">Sign in</button><div class="when">Invite-only. Ask Matthew for an account.</div></form>'}
+else if(tab==="home"){
+h=posts.length?posts.map(function(p){var s=slaps.filter(function(x){return x.post_id===p.id}),on=s.some(function(x){return x.user_id===me}),c=cms.filter(function(x){return x.post_id===p.id});
+return'<article class="card post"><div class="head">'+av(p.user_id)+'<div><div class="who">'+nm(p.user_id)+'</div><div class="when">'+ago(p.created_at)+'</div></div></div><p>'+esc(p.body)+'</p><div class="acts"><button class="slap'+(on?" on":"")+'" data-s="'+p.id+'">✋ Slap · '+s.length+'</button><button class="ghost" data-c="1">💬 '+c.length+'</button></div>'+c.map(function(x){return'<div class="cm"><b>'+nm(x.user_id)+'</b> '+esc(x.body)+'</div>'}).join("")+'<form class="cf" data-f="'+p.id+'"><input placeholder="Say something…" maxlength="200" aria-label="Comment"><button class="ghost" type="submit">Send</button></form></article>'}).join(""):'<div class="card">No slaps yet. Tap the orange button to post the first one!</div>'}
+else if(tab==="friends"){h='<div class="card"><h3>Your friends</h3>'+Object.keys(P).filter(function(i){return i!==me}).map(function(i){return'<div class="fr">'+av(i)+'<div><div class="who">'+nm(i)+'</div><div class="when">'+esc(P[i].mood||"")+'</div></div><button class="go" data-sl="'+nm(i)+'">✋ Slap</button></div>'}).join("")+'</div>'}
+else if(tab==="alerts"){h='<div class="card"><h3>Alerts</h3>'+(alerts.length?alerts.map(function(a){return'<div class="fr">'+av(a.u)+'<div>'+a.t+'</div></div>'}).join(""):"Nothing yet.")+'</div>'}
+else{var m=P[me]||{},mine=posts.filter(function(p){return p.user_id===me}),got=slaps.filter(function(s){return mine.some(function(p){return p.id===s.post_id})}).length;
+h='<div class="card me">'+av(me)+'<input id="nameIn" value="'+esc(m.name||"")+'" maxlength="20" aria-label="Display name" style="text-align:center"><div class="when" style="margin-top:6px">Mood: '+esc(m.mood||"")+' · '+mine.length+' posts · '+got+' slaps</div></div><div class="card"><h3>Pick your avatar</h3><div class="picks">'+pics.map(function(e){return'<button data-a="'+e+'"'+(m.avatar===e?' class="on"':"")+'>'+e+'</button>'}).join("")+'</div></div><div class="card"><h3>Set your mood</h3>'+moods.map(function(x){return'<button class="chip" data-m="'+x+'">'+x+'</button>'}).join("")+'</div><button class="ghost" data-out="1">Sign out</button>'}
+$("screen").innerHTML=h;
+document.querySelectorAll("nav [data-t]").forEach(function(b){b.className=b.dataset.t===tab?"on":""});
+var bd=$("badge");bd.hidden=!unread;bd.textContent=unread}
+function go(t){tab=t;if(t==="alerts")unread=0;view();$("screen").scrollTop=0}
+function onRT(p){var n=p.new||{};
+if(p.eventType==="INSERT"&&n.user_id!==me&&(p.table==="slaps"||p.table==="comments")){var po=posts.find(function(x){return x.id===n.post_id});
+if(po&&po.user_id===me){alerts.unshift({u:n.user_id,t:nm(n.user_id)+(p.table==="slaps"?" slapped your post":" commented on your post")});if(tab!=="alerts")unread++}}
+clearTimeout(timer);timer=setTimeout(load,150)}
+async function start(uid){me=uid;await load();chan=sb.channel("slap").on("postgres_changes",{event:"*",schema:"public"},onRT).subscribe()}
+async function upd(o){var r=await sb.from("profiles").update(o).eq("id",me);if(r.error)toast(r.error.message);else{Object.assign(P[me],o);view()}}
+document.addEventListener("click",async function(e){
+var b=e.target.closest("button");if(!b)return;var d=b.dataset;
+if(d.t)go(d.t);else if(b.id==="bell")go("alerts");
+else if(d.s){var id=+d.s,has=slaps.some(function(x){return x.post_id===id&&x.user_id===me});
+if(has){slaps=slaps.filter(function(x){return!(x.post_id===id&&x.user_id===me)});view();await sb.from("slaps").delete().match({post_id:id,user_id:me})}
+else{pow(b);thwack();slaps.push({post_id:id,user_id:me});view();await sb.from("slaps").insert({post_id:id})}}
+else if(d.c)b.closest(".post").querySelector(".cf input").focus();
+else if(d.sl){pow(b);thwack();toast("You slapped "+d.sl+"!")}
+else if(d.a)upd({avatar:d.a});else if(d.m)upd({mood:d.m});
+else if(d.out){await sb.auth.signOut();if(chan)sb.removeChannel(chan);me=null;view()}
+else if(b.id==="fab"){$("sheet").classList.add("open");$("txt").focus()}
+else if(b.id==="cancel")$("sheet").classList.remove("open");
+else if(b.id==="send"){var v=$("txt").value.trim();if(!v)return;var r=await sb.from("posts").insert({body:v});if(r.error)return toast(r.error.message);$("txt").value="";$("cnt").textContent=200;$("sheet").classList.remove("open");tab="home";load()}});
+document.addEventListener("submit",async function(e){e.preventDefault();var f=e.target;
+if(f.hasAttribute("data-login")){var r=await sb.auth.signInWithPassword({email:$("em").value.trim(),password:$("pw").value});if(r.error)return toast("Wrong email or password");start(r.data.user.id)}
+else if(f.dataset.f){var i=f.querySelector("input"),v=i.value.trim();if(!v)return;i.value="";var r2=await sb.from("comments").insert({post_id:+f.dataset.f,body:v});if(r2.error)toast(r2.error.message)}});
+document.addEventListener("focusout",function(e){if(e.target.id==="nameIn"&&me){var v=e.target.value.trim();if(v&&v!==(P[me]||{}).name)upd({name:v})}if(dirty){dirty=false;setTimeout(load,600)}});
+$("txt").addEventListener("input",function(){$("cnt").textContent=200-this.value.length});
+$("sheet").addEventListener("click",function(e){if(e.target===this)this.classList.remove("open")});
+if(SB_URL.indexOf("PASTE")===0){$("screen").innerHTML='<div class="card"><h3>Almost there</h3>Open this file and paste your Supabase project URL and anon key into the two values at the top of the script.</div>'}
+else sb.auth.getSession().then(function(s){if(s.data.session)start(s.data.session.user.id);else view()});
+})();
+</script>
+</body>
+</html>
