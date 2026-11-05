@@ -68,7 +68,7 @@ h3{margin:0 0 8px;color:var(--blue2)}
 <div class="sheet" id="sheet"><div class="in"><h3>What’s slapping?</h3><textarea id="txt" maxlength="200" placeholder="Slap something onto your page…"></textarea><div class="row"><small id="cnt">200</small><button class="ghost" id="cancel" type="button">Cancel</button><button class="go" id="send" type="button">Slap it up</button></div></div></div>
 <div class="toast" id="toast"></div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.js"></script>
 <script>
 (function(){
 var SB_URL="https://utwagletvuipfdubiiib.supabase.co/rest/v1/",SB_KEY="sb_publishable_jwtw0bvkh-kjnjndKgMXKg_Q_U2ZYyV";
@@ -124,7 +124,7 @@ else if(b.id==="fab"){$("sheet").classList.add("open");$("txt").focus()}
 else if(b.id==="cancel")$("sheet").classList.remove("open");
 else if(b.id==="send"){var v=$("txt").value.trim();if(!v)return;var r=await sb.from("posts").insert({body:v});if(r.error)return toast(r.error.message);$("txt").value="";$("cnt").textContent=200;$("sheet").classList.remove("open");tab="home";load()}});
 document.addEventListener("submit",async function(e){e.preventDefault();var f=e.target;
-if(f.hasAttribute("data-login")){var r=await sb.auth.signInWithPassword({email:$("em").value.trim(),password:$("pw").value});if(r.error)return toast("Wrong email or password");start(r.data.user.id)}
+if(f.hasAttribute("data-login")){var r=await sb.auth.signInWithPassword({email:$("em").value.trim(),password:$("pw").value});if(r.error)return toast(r.error.message);start(r.data.user.id)}
 else if(f.dataset.f){var i=f.querySelector("input"),v=i.value.trim();if(!v)return;i.value="";var r2=await sb.from("comments").insert({post_id:+f.dataset.f,body:v});if(r2.error)toast(r2.error.message)}});
 document.addEventListener("focusout",function(e){if(e.target.id==="nameIn"&&me){var v=e.target.value.trim();if(v&&v!==(P[me]||{}).name)upd({name:v})}if(dirty){dirty=false;setTimeout(load,600)}});
 $("txt").addEventListener("input",function(){$("cnt").textContent=200-this.value.length});
