@@ -63,87 +63,110 @@ h3{margin:0 0 8px;color:var(--blue2)}
 div.photo{height:140px;display:grid;place-items:center;font-size:40px}
 .sheet .photo{max-height:160px;margin:8px 0 0}
 .link{cursor:pointer}
+.av{overflow:hidden}.av img{width:100%;height:100%;object-fit:cover}
+.thread{max-height:46vh;min-height:120px;overflow-y:auto;display:grid;gap:6px;align-content:start;padding:10px 0}
+.bub{max-width:80%;justify-self:start;background:var(--bg);border:2px solid var(--line);border-radius:18px 18px 18px 6px;padding:8px 12px;word-break:break-word}
+.bub.me{justify-self:end;background:linear-gradient(#5cb4ff,var(--blue2));color:#fff;border-color:var(--blue2);border-radius:18px 18px 6px 18px}
+.bub small{display:block;font-size:11px;opacity:.7}
+.msgbar{display:flex;gap:6px}
+.pill{margin-left:auto;background:var(--or);color:#fff;border-radius:99px;min-width:22px;height:22px;display:grid;place-items:center;font-weight:700;font-size:13px;padding:0 6px}
 </style>
 </head>
 <body>
 <div class="phone out" id="phone">
-<div class="top"><div class="logo"><span class="hand">✋</span>theSlap</div><button class="bell" id="bell" aria-label="Alerts">🔔<i id="badge" hidden>0</i></button></div>
+<div class="top"><div class="logo"><span class="hand">✋</span>theSlap</div><button class="bell" id="mail" aria-label="Messages">✉️<i id="mbadge" hidden>0</i></button><button class="bell" id="bell" aria-label="Alerts">🔔<i id="badge" hidden>0</i></button></div>
 <div class="screen" id="screen"></div>
 <nav><button data-t="home"><b>🏠</b>Home</button><button data-t="friends"><b>👥</b>Friends</button><button class="fab" id="fab" aria-label="New slap">✍️</button><button data-t="alerts"><b>⚡</b>Alerts</button><button data-t="me"><b>🙂</b>Me</button></nav>
 <div class="sheet" id="sheet"><div class="in"><h3>What’s slapping?</h3><textarea id="txt" maxlength="200" placeholder="Slap something onto your page…"></textarea><img id="prev" class="photo" alt="Selected photo" hidden><input type="file" id="file" accept="image/*" hidden><div class="row"><small id="cnt">200</small><button class="ghost" id="pick" type="button">📷 Photo</button><button class="ghost" id="cancel" type="button">Cancel</button><button class="go" id="send" type="button">Slap it up</button></div></div></div>
-<div class="toast" id="toast"></div>
+<input type="file" id="ppfile" accept="image/*" hidden><div class="toast" id="toast"></div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.js"></script>
 <script>
 (function(){
 var SB_URL="https://utwagletvuipfdubiiib.supabase.co",SB_KEY="sb_publishable_jwtw0bvkh-kjnjndKgMXKg_Q_U2ZYyV";
 var sb=window.supabase.createClient(SB_URL,SB_KEY);
-var me=null,P={},posts=[],slaps=[],cms=[],alerts=[],unread=0,tab="home",dirty=false,timer,chan,urls={},viewing=null,back="home",picked=null;
+var me=null,P={},posts=[],slaps=[],cms=[],alerts=[],unread=0,tab="home",dirty=false,timer,chan,urls={},msgs=[],chatWith=null,viewing=null,back="home",picked=null;
 var moods=["ready to perform","overly caffeinated","running late","feeling slapped","too famous for this","hungry for tacos"];
 var pics=["🎤","🎸","🧢","💃","🦄","🍕","🧦","🎹"];
 function $(i){return document.getElementById(i)}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function col(id){var h=0;for(var i=0;i<id.length;i++)h=(h*31+id.charCodeAt(i))%360;return"hsl("+h+",80%,85%)"}
-function av(id){return'<div class="av" style="background:'+col(id)+'">'+esc((P[id]||{}).avatar||"🙂")+'</div>'}
+var IMG=/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/;
+function av(id){var p=P[id]||{};return'<div class="av" style="background:'+col(id)+'">'+(p.avatar_img&&IMG.test(p.avatar_img)?'<img src="'+p.avatar_img+'" alt="">':esc(p.avatar||"🙂"))+'</div>'}
 function nm(id){return esc((P[id]||{}).name||"Friend")}
 function ago(t){var s=(Date.now()-new Date(t))/1000;return s<60?"now":s<3600?Math.floor(s/60)+"m":s<86400?Math.floor(s/3600)+"h":Math.floor(s/86400)+"d"}
 function toast(m){var t=$("toast");t.textContent=m;t.className="toast show";clearTimeout(toast.x);toast.x=setTimeout(function(){t.className="toast"},2200)}
 var ac;function thwack(){try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();var o=ac.createOscillator(),g=ac.createGain(),n=ac.currentTime;o.type="square";o.frequency.setValueAtTime(380,n);o.frequency.exponentialRampToValueAtTime(60,n+.12);g.gain.setValueAtTime(.18,n);g.gain.exponentialRampToValueAtTime(.001,n+.14);o.connect(g);g.connect(ac.destination);o.start();o.stop(n+.15)}catch(e){}}
 function pow(el){var r=el.getBoundingClientRect(),e=document.createElement("div");e.className="pow";e.textContent=["SLAP!","THWACK!","POW!"][Math.floor(Math.random()*3)];e.style.left=r.left+r.width/2+"px";e.style.top=r.top+"px";document.body.appendChild(e);setTimeout(function(){e.remove()},750)}
 async function load(){
-var r=await Promise.all([sb.from("profiles").select("*"),sb.from("posts").select("*").order("created_at",{ascending:false}).limit(50),sb.from("slaps").select("*"),sb.from("comments").select("*").order("created_at")]);
+var r=await Promise.all([sb.from("profiles").select("*"),sb.from("posts").select("*").order("created_at",{ascending:false}).limit(50),sb.from("slaps").select("*"),sb.from("comments").select("*").order("created_at"),sb.from("messages").select("*").order("created_at")]);
 r.forEach(function(x){if(x.error)toast(x.error.message)});
-P={};(r[0].data||[]).forEach(function(p){P[p.id]=p});posts=r[1].data||[];slaps=r[2].data||[];cms=r[3].data||[];
+P={};(r[0].data||[]).forEach(function(p){P[p.id]=p});posts=r[1].data||[];slaps=r[2].data||[];cms=r[3].data||[];msgs=r[4].data||[];
 var need=posts.filter(function(p){return p.image_path&&!urls[p.image_path]}).map(function(p){return p.image_path});
 if(need.length){var sg=await sb.storage.from("photos").createSignedUrls(need,86400);(sg.data||[]).forEach(function(x){if(x.signedUrl)urls[x.path]=x.signedUrl})}
 refresh()}
-function refresh(){var a=document.activeElement;if(a&&a.tagName==="INPUT"&&a.closest(".screen")&&me){dirty=true;return}view()}
+function refresh(){var a=document.activeElement;if(a&&a.tagName==="INPUT"&&a.id!=="msgIn"&&a.closest(".screen")&&me){dirty=true;return}view()}
+function bubbles(w){var l=msgs.filter(function(m){return m.sender_id===w||m.recipient_id===w});return l.length?l.map(function(m){return'<div class="bub'+(m.sender_id===me?" me":"")+'">'+esc(m.body)+'<small>'+ago(m.created_at)+'</small></div>'}).join(""):'<div class="when">Say hi!</div>'}
+function scrollEnd(){var t=$("thread");if(t)t.scrollTop=t.scrollHeight}
+function mb(){var n=msgs.filter(function(m){return m.recipient_id===me&&!m.is_read}).length,e=$("mbadge");e.hidden=!n;e.textContent=n}
+function markRead(){var un=msgs.filter(function(m){return m.recipient_id===me&&m.sender_id===chatWith&&!m.is_read});if(!un.length)return;un.forEach(function(m){m.is_read=true});sb.from("messages").update({is_read:true}).eq("recipient_id",me).eq("sender_id",chatWith).eq("is_read",false).then(function(r){if(r.error)toast(r.error.message)})}
+function square(f,n){return new Promise(function(ok,no){var im=new Image(),u=URL.createObjectURL(f);im.onload=function(){var k=Math.min(im.width,im.height),c=document.createElement("canvas");c.width=c.height=n;c.getContext("2d").drawImage(im,(im.width-k)/2,(im.height-k)/2,k,k,0,0,n,n);URL.revokeObjectURL(u);ok(c.toDataURL("image/jpeg",.8))};im.onerror=function(){no(new Error("Couldn’t read that image"))};im.src=u})}
 function card(p){var s=slaps.filter(function(x){return x.post_id===p.id}),on=s.some(function(x){return x.user_id===me}),c=cms.filter(function(x){return x.post_id===p.id});
 return'<article class="card post"><div class="head link" data-v="'+p.user_id+'">'+av(p.user_id)+'<div><div class="who">'+nm(p.user_id)+'</div><div class="when">'+ago(p.created_at)+'</div></div></div>'+(p.body?'<p>'+esc(p.body)+'</p>':'')+(p.image_path?(urls[p.image_path]?'<img class="photo" src="'+urls[p.image_path]+'" alt="Photo" loading="lazy">':'<div class="photo">📷</div>'):'')+'<div class="acts"><button class="slap'+(on?" on":"")+'" data-s="'+p.id+'">✋ Slap · '+s.length+'</button><button class="ghost" data-c="1">💬 '+c.length+'</button>'+(p.user_id===me?'<button class="ghost" data-del="'+p.id+'" aria-label="Delete post">🗑</button>':'')+'</div>'+c.map(function(x){return'<div class="cm"><b>'+nm(x.user_id)+'</b> '+esc(x.body)+'</div>'}).join("")+'<form class="cf" data-f="'+p.id+'"><input placeholder="Say something…" maxlength="200" aria-label="Comment"><button class="ghost" type="submit">Send</button></form></article>'}
 function view(){
+if(me&&tab==="msgs"&&chatWith&&$("thread")&&$("thread").dataset.w===chatWith){$("thread").innerHTML=bubbles(chatWith);scrollEnd();markRead();mb();return}
 var h="",ph=$("phone");ph.className="phone"+(me?"":" out");
 if(!me){h='<form class="card login" data-login><h3>Sign in to theSlap</h3><input type="email" id="em" placeholder="Email" autocomplete="username" required><input type="password" id="pw" placeholder="Password" autocomplete="current-password" required><button class="go" type="submit">Sign in</button><div class="when">Invite-only. Ask Matthew for an account.</div></form>'}
 else if(tab==="home"){h=posts.length?posts.map(card).join(""):'<div class="card">No slaps yet. Tap the orange button to post the first one!</div>'}
 else if(tab==="friends"&&viewing&&P[viewing]){var pp=posts.filter(function(p){return p.user_id===viewing}),gt=slaps.filter(function(x){return pp.some(function(p){return p.id===x.post_id})}).length;
-h='<button class="ghost" data-back="1">← Back</button><div class="card me">'+av(viewing)+'<div class="who" style="font-size:22px">'+nm(viewing)+'</div><div class="when">Mood: '+esc(P[viewing].mood||"")+' · '+pp.length+' posts · '+gt+' slaps</div></div>'+(pp.length?pp.map(card).join(""):'<div class="card">Nothing posted yet.</div>')}
+h='<div class="row" style="margin:0"><button class="ghost" data-back="1">← Back</button>'+(viewing!==me?'<button class="go" data-chat="'+viewing+'">💬 Message</button>':"")+'</div><div class="card me">'+av(viewing)+'<div class="who" style="font-size:22px">'+nm(viewing)+'</div><div class="when">Mood: '+esc(P[viewing].mood||"")+' · '+pp.length+' posts · '+gt+' slaps</div></div>'+(pp.length?pp.map(card).join(""):'<div class="card">Nothing posted yet.</div>')}
 else if(tab==="friends"){h='<div class="card"><h3>Your friends</h3>'+Object.keys(P).filter(function(i){return i!==me}).map(function(i){return'<div class="fr link" data-v="'+i+'">'+av(i)+'<div><div class="who">'+nm(i)+'</div><div class="when">'+esc(P[i].mood||"")+'</div></div><button class="go" data-sl="'+nm(i)+'">✋ Slap</button></div>'}).join("")+'</div>'}
+else if(tab==="msgs"&&chatWith&&P[chatWith]){h='<button class="ghost" data-mback="1">← Inbox</button><div class="card"><div class="head link" data-v="'+chatWith+'">'+av(chatWith)+'<div class="who">'+nm(chatWith)+'</div></div><div class="thread" id="thread" data-w="'+chatWith+'">'+bubbles(chatWith)+'</div><form class="msgbar" data-msg="'+chatWith+'"><input id="msgIn" placeholder="Message…" maxlength="500" autocomplete="off" aria-label="Message"><button class="go" type="submit">Send</button></form></div>'}
+else if(tab==="msgs"){var cv=Object.keys(P).filter(function(i){return i!==me}).map(function(i){var l=msgs.filter(function(m){return m.sender_id===i||m.recipient_id===i});return{i:i,last:l[l.length-1],un:l.filter(function(m){return m.recipient_id===me&&!m.is_read}).length}}).sort(function(a,b){return(b.last?+new Date(b.last.created_at):0)-(a.last?+new Date(a.last.created_at):0)});
+h='<div class="card"><h3>Messages</h3>'+cv.map(function(c){return'<div class="fr link" data-chat="'+c.i+'">'+av(c.i)+'<div style="min-width:0"><div class="who">'+nm(c.i)+'</div><div class="when" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(c.last?(c.last.sender_id===me?"You: ":"")+esc(c.last.body):"Start a chat")+'</div></div>'+(c.un?'<span class="pill">'+c.un+'</span>':"")+'</div>'}).join("")+'</div>'}
 else if(tab==="alerts"){h='<div class="card"><h3>Alerts</h3>'+(alerts.length?alerts.map(function(a){return'<div class="fr">'+av(a.u)+'<div>'+a.t+'</div></div>'}).join(""):"Nothing yet.")+'</div>'}
 else{var m=P[me]||{},mine=posts.filter(function(p){return p.user_id===me}),got=slaps.filter(function(s){return mine.some(function(p){return p.id===s.post_id})}).length;
-h='<div class="card me">'+av(me)+'<input id="nameIn" value="'+esc(m.name||"")+'" maxlength="20" aria-label="Display name" style="text-align:center"><div class="when" style="margin-top:6px">Mood: '+esc(m.mood||"")+' · '+mine.length+' posts · '+got+' slaps</div></div><div class="card"><h3>Pick your avatar</h3><div class="picks">'+pics.map(function(e){return'<button data-a="'+e+'"'+(m.avatar===e?' class="on"':"")+'>'+e+'</button>'}).join("")+'</div></div><div class="card"><h3>Set your mood</h3>'+moods.map(function(x){return'<button class="chip" data-m="'+x+'">'+x+'</button>'}).join("")+'</div><button class="ghost" data-out="1">Sign out</button>'}
+h='<div class="card me">'+av(me)+'<input id="nameIn" value="'+esc(m.name||"")+'" maxlength="20" aria-label="Display name" style="text-align:center"><div class="when" style="margin-top:6px">Mood: '+esc(m.mood||"")+' · '+mine.length+' posts · '+got+' slaps</div></div><div class="card"><h3>Profile picture</h3><div class="row" style="margin:0"><button class="go" data-pp="1">📷 Upload photo</button>'+(m.avatar_img?'<button class="ghost" data-rm="1">Remove</button>':"")+'</div></div><div class="card"><h3>Pick your avatar</h3><div class="picks">'+pics.map(function(e){return'<button data-a="'+e+'"'+(m.avatar===e?' class="on"':"")+'>'+e+'</button>'}).join("")+'</div></div><div class="card"><h3>Set your mood</h3>'+moods.map(function(x){return'<button class="chip" data-m="'+x+'">'+x+'</button>'}).join("")+'</div><button class="ghost" data-out="1">Sign out</button>'}
 $("screen").innerHTML=h;
 document.querySelectorAll("nav [data-t]").forEach(function(b){b.className=b.dataset.t===tab?"on":""});
-var bd=$("badge");bd.hidden=!unread;bd.textContent=unread}
+var bd=$("badge");bd.hidden=!unread;bd.textContent=unread;mb();if(tab==="msgs"&&chatWith){scrollEnd();markRead();mb()}}
 function go(t){tab=t;viewing=null;if(t==="alerts")unread=0;view();$("screen").scrollTop=0}
-function onRT(p){var n=p.new||{};
+function onRT(p){var n=p.new||{};if(p.table==="messages"&&p.eventType==="INSERT"&&n.recipient_id===me&&!(tab==="msgs"&&chatWith===n.sender_id))toast("New message from "+((P[n.sender_id]||{}).name||"a friend"));
 if(p.eventType==="INSERT"&&n.user_id!==me&&(p.table==="slaps"||p.table==="comments")){var po=posts.find(function(x){return x.id===n.post_id});
 if(po&&po.user_id===me){alerts.unshift({u:n.user_id,t:nm(n.user_id)+(p.table==="slaps"?" slapped your post":" commented on your post")});if(tab!=="alerts")unread++}}
 clearTimeout(timer);timer=setTimeout(load,150)}
 async function start(uid){me=uid;await load();chan=sb.channel("slap").on("postgres_changes",{event:"*",schema:"public"},onRT).subscribe()}
 async function upd(o){var r=await sb.from("profiles").update(o).eq("id",me);if(r.error)toast(r.error.message);else{Object.assign(P[me],o);view()}}
 document.addEventListener("click",async function(e){
-var b=e.target.closest("button,[data-v]");if(!b)return;var d=b.dataset;
-if(d.t)go(d.t);else if(b.id==="bell")go("alerts");
+var b=e.target.closest("button,[data-v],[data-chat]");if(!b)return;var d=b.dataset;
+if(d.t)go(d.t);else if(b.id==="bell")go("alerts");else if(b.id==="mail"){chatWith=null;go("msgs")}
 else if(d.s){var id=+d.s,has=slaps.some(function(x){return x.post_id===id&&x.user_id===me});
 if(has){slaps=slaps.filter(function(x){return!(x.post_id===id&&x.user_id===me)});view();await sb.from("slaps").delete().match({post_id:id,user_id:me})}
 else{pow(b);thwack();slaps.push({post_id:id,user_id:me});view();await sb.from("slaps").insert({post_id:id})}}
 else if(d.c)b.closest(".post").querySelector(".cf input").focus();
+else if(d.chat){chatWith=d.chat;tab="msgs";viewing=null;view()}
+else if(d.mback){chatWith=null;view()}
+else if(d.pp)$("ppfile").click();
+else if(d.rm)upd({avatar_img:null});
 else if(d.v){back=tab;tab="friends";viewing=d.v;view();$("screen").scrollTop=0}
 else if(d.back){tab=back;viewing=null;view()}
 else if(d.del){var id2=+d.del;if(!confirm("Delete this post?"))return;var po=posts.find(function(x){return x.id===id2});posts=posts.filter(function(x){return x.id!==id2});view();var dr=await sb.from("posts").delete().eq("id",id2);if(dr.error){toast(dr.error.message);load();return}if(po&&po.image_path)sb.storage.from("photos").remove([po.image_path])}
 else if(d.sl){pow(b);thwack();toast("You slapped "+d.sl+"!")}
 else if(d.a)upd({avatar:d.a});else if(d.m)upd({mood:d.m});
-else if(d.out){await sb.auth.signOut();if(chan)sb.removeChannel(chan);me=null;view()}
+else if(d.out){await sb.auth.signOut();if(chan)sb.removeChannel(chan);me=null;chatWith=null;msgs=[];tab="home";view()}
 else if(b.id==="fab"){$("sheet").classList.add("open");$("txt").focus()}
 else if(b.id==="pick")$("file").click();
 else if(b.id==="cancel"){clearC();$("sheet").classList.remove("open")}
 else if(b.id==="send"){var v=$("txt").value.trim();if(!v&&!picked)return;b.disabled=true;b.textContent="Posting…";var path=null;try{if(picked){var blob=await shrink(picked);path=me+"/"+Date.now()+".jpg";var up=await sb.storage.from("photos").upload(path,blob,{contentType:"image/jpeg"});if(up.error)throw up.error}var r=await sb.from("posts").insert({body:v,image_path:path});if(r.error)throw r.error}catch(err){b.disabled=false;b.textContent="Slap it up";return toast(err.message||"Couldn\u2019t post")}b.disabled=false;b.textContent="Slap it up";clearC();$("sheet").classList.remove("open");tab="home";viewing=null;load()}});
 document.addEventListener("submit",async function(e){e.preventDefault();var f=e.target;
 if(f.hasAttribute("data-login")){var r=await sb.auth.signInWithPassword({email:$("em").value.trim(),password:$("pw").value});if(r.error)return toast(r.error.message);start(r.data.user.id)}
+else if(f.dataset.msg){var mi=f.querySelector("input"),mv=mi.value.trim();if(!mv)return;mi.value="";msgs.push({id:-Date.now(),sender_id:me,recipient_id:f.dataset.msg,body:mv,created_at:new Date().toISOString(),is_read:false});view();var mr=await sb.from("messages").insert({recipient_id:f.dataset.msg,body:mv});if(mr.error){toast(mr.error.message);load()}}
 else if(f.dataset.f){var i=f.querySelector("input"),v=i.value.trim();if(!v)return;i.value="";var r2=await sb.from("comments").insert({post_id:+f.dataset.f,body:v});if(r2.error)toast(r2.error.message)}});
 document.addEventListener("focusout",function(e){if(e.target.id==="nameIn"&&me){var v=e.target.value.trim();if(v&&v!==(P[me]||{}).name)upd({name:v})}if(dirty){dirty=false;setTimeout(load,600)}});
 function clearC(){$("txt").value="";$("cnt").textContent=200;picked=null;$("file").value="";$("prev").hidden=true}
 function shrink(f){return new Promise(function(ok,no){var im=new Image(),u=URL.createObjectURL(f);im.onload=function(){var k=Math.min(1,1280/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(function(b){b?ok(b):no(new Error("Couldn\u2019t read that image"))},"image/jpeg",.82)};im.onerror=function(){no(new Error("Couldn\u2019t read that image"))};im.src=u})}
 $("file").addEventListener("change",function(){var f=this.files[0];if(!f)return;picked=f;var pv=$("prev");pv.src=URL.createObjectURL(f);pv.hidden=false});
+$("ppfile").addEventListener("change",async function(){var f=this.files[0];this.value="";if(!f)return;try{upd({avatar_img:await square(f,192)})}catch(e){toast(e.message)}});
 $("txt").addEventListener("input",function(){$("cnt").textContent=200-this.value.length});
 $("sheet").addEventListener("click",function(e){if(e.target===this)this.classList.remove("open")});
 if(SB_URL.indexOf("PASTE")===0){$("screen").innerHTML='<div class="card"><h3>Almost there</h3>Open this file and paste your Supabase project URL and anon key into the two values at the top of the script.</div>'}
